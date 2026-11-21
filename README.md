@@ -7,7 +7,20 @@ A tech blog platform: readers browse and comment on articles, authors write them
 | API | Spring Boot 3.5, Spring Security (JWT), JPA, PostgreSQL | `SpringBoot/` |
 | Web app | Angular 19 (standalone components, SSR for public pages) | `projet/` |
 
-## Run it locally
+## Run it with Docker (recommended)
+
+Three containers: PostgreSQL, the Spring Boot API and the Angular SSR server.
+Only the web app is published; it forwards `/api` and `/images` to the API.
+
+```bash
+cp .env.docker.example .env      # then edit the values (DB_PASSWORD, JWT_SECRET, ADMIN_*)
+docker compose up -d --build
+```
+
+Open http://localhost:4000. With `MAIL_ENABLED=false`, read activation codes with
+`docker compose logs api`. Data and uploaded images are kept in Docker volumes.
+
+## Run it locally (without Docker)
 
 ### 1. Database
 Create an empty PostgreSQL database (tables are created automatically):
@@ -46,7 +59,9 @@ npm install
 npm start
 ```
 
-The API address is set in `projet/src/app/core/api.config.ts`.
+The browser calls `/api` and `/images` on the same origin: the dev server
+(`proxy.conf.json`) or the Node SSR server forwards them to `http://localhost:8080`
+(override with `API_INTERNAL_URL`).
 
 ## Roles
 
