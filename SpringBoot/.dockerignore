@@ -1,0 +1,10 @@
+target/
+logs/
+uploads/
+*.log
+.env
+.env.*
+!.env.example
+.mvn/wrapper/maven-wrapper.jar
+.idea/
+.vscode/

@@ -1,10 +1,20 @@
-/** Base URL of the Spring Boot API (change it for production). */
-export const API_URL = 'http://localhost:8080';
+import { InjectionToken } from '@angular/core';
 
-export const API = `${API_URL}/api`;
+/**
+ * Origin of the Spring Boot API.
+ * - In the browser it is '' : calls go to /api on the same origin and the Node
+ *   server (server.ts) or the dev proxy forwards them to Spring Boot.
+ * - During server-side rendering it is overridden in app.config.server.ts with
+ *   API_INTERNAL_URL (e.g. http://api:8080 inside Docker).
+ */
+export const API_BASE_URL = new InjectionToken<string>('API_BASE_URL', {
+  providedIn: 'root',
+  factory: () => '',
+});
 
+/** Images are always loaded by the browser through the same origin. */
 export function imageUrl(name: string | null | undefined): string {
-  return name ? `${API_URL}/images/${encodeURIComponent(name)}` : 'assets/img3.jpg';
+  return name ? `/images/${encodeURIComponent(name)}` : 'assets/img3.jpg';
 }
 
 export const CATEGORIES: { value: string; label: string }[] = [

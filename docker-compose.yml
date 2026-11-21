@@ -1,0 +1,67 @@
+# EvoBlog: PostgreSQL + Spring Boot API + Angular (SSR)
+#
+#   cp .env.docker.example .env      # then fill in the values
+#   docker compose up -d --build     # build and start
+#   open http://localhost:4000
+#
+# Only the web container is published. The API and the database stay on the
+# internal Docker network (the web server forwards /api and /images to the API).
+
+name: evoblog
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-evoblog}
+      POSTGRES_USER: ${DB_USERNAME:-evoblog}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    # Uncomment to reach the database from your machine (pgAdmin, DBeaver...)
+    # ports:
+    #   - "5432:5432"
+
+  api:
+    build: ./SpringBoot
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_URL: jdbc:postgresql://db:5432/${DB_NAME:-evoblog}
+      DB_USERNAME: ${DB_USERNAME:-evoblog}
+      DB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env (at least 32 characters)}
+      JWT_TTL_MINUTES: ${JWT_TTL_MINUTES:-120}
+      MAIL_ENABLED: ${MAIL_ENABLED:-false}
+      MAIL_USERNAME: ${MAIL_USERNAME:-}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+      CORS_ORIGINS: ${PUBLIC_URL:-http://localhost:4000}
+    volumes:
+      - uploads:/app/uploads
+    # Uncomment to call the API directly from your machine (Postman...)
+    # ports:
+    #   - "8080:8080"
+
+  web:
+    build: ./projet
+    restart: unless-stopped
+    depends_on:
+      - api
+    environment:
+      API_INTERNAL_URL: http://api:8080
+    ports:
+      - "${WEB_PORT:-4000}:4000"
+
+volumes:
+  db-data:
+  uploads:

@@ -5,6 +5,7 @@ import {
   writeResponseToNodeResponse,
 } from '@angular/ssr/node';
 import express from 'express';
+import { createProxyMiddleware } from 'http-proxy-middleware';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -24,6 +25,19 @@ app.use((_req, res, next) => {
   res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
   next();
 });
+
+/**
+ * The browser only talks to this server: /api and /images are forwarded to
+ * Spring Boot (no CORS, a single public port). X-Forwarded-For carries the
+ * real client IP so the API rate limiting keeps working behind the proxy.
+ */
+app.use(
+  createProxyMiddleware({
+    target: process.env['API_INTERNAL_URL'] || 'http://localhost:8080',
+    pathFilter: ['/api/**', '/images/**'],
+    xfwd: true,
+  }),
+);
 
 /**
  * Serve static files from /browser
