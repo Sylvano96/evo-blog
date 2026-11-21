@@ -1,0 +1,10 @@
+.back {
+  display: inline-flex; align-items: center; gap: 6px;
+  margin-bottom: 16px;
+  color: var(--text-2); font-size: .9rem; font-weight: 500;
+}
+.back:hover { color: var(--text); text-decoration: none; }
+
+.alert { margin-bottom: 20px; }
+.card-skel { height: 300px; border-radius: var(--radius-lg); }
+.tags { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }

@@ -1,0 +1,51 @@
+<app-nav-bar />
+
+<main class="auth-page">
+  <div class="card auth-card">
+    @if (activated) {
+      <div class="done">
+        <span class="badge-icon"><app-icon name="check" [size]="24" /></span>
+        <h1>Compte activé</h1>
+        <p class="lead">Votre compte est prêt. Vous pouvez maintenant vous connecter.</p>
+        <a class="btn btn-primary btn-lg btn-block" routerLink="/login">Se connecter</a>
+      </div>
+    } @else {
+      <span class="badge-icon"><app-icon name="mail" [size]="22" /></span>
+      <h1>Activez votre compte</h1>
+      <p class="lead">Saisissez le code à 6 chiffres envoyé par e-mail. Il est valable 10 minutes.</p>
+
+      <form [formGroup]="validate" (ngSubmit)="submit()" novalidate>
+        <div class="field">
+          <label class="label" for="email">E-mail</label>
+          <input id="email" class="input" type="email" formControlName="email" autocomplete="email" />
+          @if (validate.controls.email.touched && validate.controls.email.invalid) {
+            <span class="field-error">Saisissez une adresse e-mail valide.</span>
+          }
+        </div>
+
+        <div class="field">
+          <label class="label" for="code">Code d'activation</label>
+          <input id="code" class="input code" formControlName="code" inputmode="numeric"
+                 autocomplete="one-time-code" maxlength="6" placeholder="000000" />
+          @if (validate.controls.code.touched && validate.controls.code.invalid) {
+            <span class="field-error">Le code contient 6 chiffres.</span>
+          }
+        </div>
+
+        @if (error) {
+          <div class="alert alert-error" role="alert"><app-icon name="alert" /> {{ error }}</div>
+        }
+        @if (info) {
+          <div class="alert alert-success" role="status"><app-icon name="check" /> {{ info }}</div>
+        }
+
+        <button class="btn btn-primary btn-lg btn-block" type="submit" [disabled]="pending">
+          {{ pending ? 'Vérification…' : 'Activer mon compte' }}
+        </button>
+        <button class="btn btn-ghost btn-block" type="button" (click)="resend()" [disabled]="resending">
+          {{ resending ? 'Envoi…' : 'Renvoyer un code' }}
+        </button>
+      </form>
+    }
+  </div>
+</main>

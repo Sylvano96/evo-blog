@@ -1,0 +1,44 @@
+<app-nav-bar />
+
+<main>
+  <section class="hero">
+    <div class="container hero-grid">
+      <div class="hero-text">
+        <span class="eyebrow">Le blog de l'innovation</span>
+        <h1>Les idées tech qui comptent, racontées par ceux qui les vivent.</h1>
+        <p class="lead">
+          EvoBlog réunit passionnés et professionnels autour de l'intelligence artificielle, du mobile,
+          de la cybersécurité et du futur du numérique.
+        </p>
+        <div class="row">
+          <a class="btn btn-primary btn-lg" routerLink="/" fragment="posts">
+            Lire les articles <app-icon name="arrow-right" [size]="16" />
+          </a>
+          <a class="btn btn-secondary btn-lg" routerLink="/signUp">Devenir auteur</a>
+        </div>
+      </div>
+
+      <figure class="hero-visual">
+        <img src="assets/img3.jpg" alt="" width="640" height="480" fetchpriority="high" />
+      </figure>
+    </div>
+  </section>
+
+  <section class="features">
+    <div class="container">
+      <div class="feature-grid">
+        @for (f of features; track f.title) {
+          <div class="feature">
+            <span class="feature-icon"><app-icon [name]="f.icon" [size]="20" /></span>
+            <h3>{{ f.title }}</h3>
+            <p>{{ f.text }}</p>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+
+  <app-posts />
+</main>
+
+<app-footer />

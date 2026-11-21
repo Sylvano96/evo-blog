@@ -1,0 +1,123 @@
+<div class="tabs" role="tablist">
+  <button type="button" role="tab" [class.on]="mode === 'edit'" [attr.aria-selected]="mode === 'edit'" (click)="mode = 'edit'">
+    <app-icon name="edit" [size]="16" /> Rédaction
+  </button>
+  <button type="button" role="tab" [class.on]="mode === 'preview'" [attr.aria-selected]="mode === 'preview'" (click)="mode = 'preview'">
+    <app-icon name="eye" [size]="16" /> Aperçu
+  </button>
+</div>
+
+@if (mode === 'edit') {
+  <div class="layout">
+    <section class="main stack">
+      <div class="card card-pad stack">
+        <div class="field">
+          <label class="label" for="title">Titre</label>
+          <input id="title" class="input title-input" [(ngModel)]="title" [maxlength]="maxTitle"
+                 placeholder="Un titre clair et accrocheur" autocomplete="off" />
+          <div class="row between">
+            @if (attempted && titleError) { <span class="field-error">{{ titleError }}</span> } @else { <span></span> }
+            <span class="hint">{{ title.length }} / {{ maxTitle }}</span>
+          </div>
+        </div>
+      </div>
+
+      @for (block of blocks; track block.id; let i = $index, first = $first, last = $last) {
+        <div class="card card-pad block">
+          <div class="block-head">
+            <span class="num">§ {{ i + 1 }}</span>
+            <span class="spacer"></span>
+            <button type="button" class="icon-btn" (click)="move(i, -1)" [disabled]="first" aria-label="Monter le paragraphe">
+              <app-icon name="chevron-up" />
+            </button>
+            <button type="button" class="icon-btn" (click)="move(i, 1)" [disabled]="last" aria-label="Descendre le paragraphe">
+              <app-icon name="chevron-down" />
+            </button>
+            <button type="button" class="icon-btn danger" (click)="removeBlock(i)" [disabled]="blocks.length === 1"
+                    aria-label="Supprimer le paragraphe">
+              <app-icon name="trash" />
+            </button>
+          </div>
+          <div class="field">
+            <label class="label" [attr.for]="'para-title-' + block.id">Sous-titre</label>
+            <input class="input" [id]="'para-title-' + block.id" [(ngModel)]="block.titlePara" [maxlength]="maxParaTitle"
+                   placeholder="Sous-titre du paragraphe" />
+          </div>
+          <div class="field">
+            <label class="label" [attr.for]="'para-content-' + block.id">Texte</label>
+            <textarea class="textarea" [id]="'para-content-' + block.id" [(ngModel)]="block.content"
+                      [maxlength]="maxContent" rows="7" placeholder="Écrivez votre paragraphe…"></textarea>
+            <span class="hint right">{{ block.content.length }} / {{ maxContent }}</span>
+          </div>
+          @if (attempted && blockError(block)) { <span class="field-error">{{ blockError(block) }}</span> }
+        </div>
+      }
+
+      <button type="button" class="btn btn-secondary add" (click)="addBlock()">
+        <app-icon name="plus" [size]="16" /> Ajouter un paragraphe
+      </button>
+    </section>
+
+    <aside class="side stack">
+      <div class="card card-pad stack">
+        <div class="field">
+          <label class="label" for="category">Catégorie</label>
+          <select id="category" class="select" [(ngModel)]="category">
+            <option value="" disabled>Choisir une catégorie…</option>
+            @for (c of categories; track c.value) {
+              <option [value]="c.value">{{ c.label }}</option>
+            }
+          </select>
+          @if (attempted && categoryError) { <span class="field-error">{{ categoryError }}</span> }
+        </div>
+
+        <div class="field">
+          <span class="label">Image de couverture</span>
+          <label class="cover" [class.has]="preview">
+            @if (preview) {
+              <img [src]="preview" alt="Aperçu de la couverture" />
+              <span class="change">Changer l'image</span>
+            } @else {
+              <app-icon name="image" [size]="28" />
+              <span>Choisir une image</span>
+              <span class="hint">PNG, JPEG, GIF, WEBP · 5 Mo max</span>
+            }
+            <input type="file" class="sr-only" accept="image/png,image/jpeg,image/gif,image/webp" (change)="onFileSelected($event)" />
+          </label>
+          @if ((attempted || fileError) && imageError) { <span class="field-error">{{ imageError }}</span> }
+        </div>
+      </div>
+
+      <div class="card card-pad stack actions">
+        @if (error) {
+          <div class="alert alert-error" role="alert"><app-icon name="alert" [size]="16" /> {{ error }}</div>
+        }
+        @if (attempted && !valid) {
+          <span class="field-error">Corrigez les champs signalés avant d'enregistrer.</span>
+        }
+        <button type="button" class="btn btn-primary btn-block" (click)="submit(true)" [disabled]="saving">
+          @if (saving) { <span class="spinner small"></span> } @else { <app-icon name="send" [size]="16" /> }
+          {{ submitLabel }}
+        </button>
+        <button type="button" class="btn btn-secondary btn-block" (click)="submit(false)" [disabled]="saving">
+          Enregistrer en brouillon
+        </button>
+        <a routerLink="/list" class="btn btn-ghost btn-block">Annuler</a>
+      </div>
+    </aside>
+  </div>
+} @else {
+  <article class="card preview">
+    @if (preview) { <img class="preview-cover" [src]="preview" alt="" /> }
+    <div class="preview-body">
+      @if (category) { <span class="chip">{{ category }}</span> }
+      <h1>{{ title || 'Titre de l’article' }}</h1>
+      <div class="prose">
+        @for (block of blocks; track block.id) {
+          @if (block.titlePara) { <h2>{{ block.titlePara }}</h2> }
+          <p>{{ block.content }}</p>
+        }
+      </div>
+    </div>
+  </article>
+}

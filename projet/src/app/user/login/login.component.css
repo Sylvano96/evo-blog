@@ -1,0 +1,3 @@
+.pwd { position: relative; }
+.pwd .input { padding-right: 44px; }
+.pwd .icon-btn { position: absolute; right: 3px; top: 50%; transform: translateY(-50%); }

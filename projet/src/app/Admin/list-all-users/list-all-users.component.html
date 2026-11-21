@@ -1,0 +1,111 @@
+<div class="dash">
+  <app-nav-bar-admin />
+  <main class="dash-main">
+    <div class="dash-header">
+      <div>
+        <h1>Auteurs</h1>
+        <p>
+          @if (isLoading) { Chargement… }
+          @else { {{ visible.length }} auteur{{ visible.length > 1 ? 's' : '' }} }
+        </p>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <label class="search">
+        <span class="sr-only">Rechercher un auteur</span>
+        <app-icon name="search" />
+        <input class="input" type="search" placeholder="Nom ou e-mail…" [value]="searchText" (input)="onSearch($event)">
+      </label>
+    </div>
+
+    @if (error) {
+      <div class="alert alert-error" role="alert"><app-icon name="alert" /> {{ error }}</div>
+    }
+
+    @if (isLoading) {
+      <div class="stack">
+        @for (i of [1, 2, 3, 4]; track i) { <div class="skeleton row-skel"></div> }
+      </div>
+    } @else if (!visible.length) {
+      <div class="empty">
+        <app-icon name="users" [size]="40" />
+        <h3>Aucun auteur</h3>
+        <p>{{ searchText ? 'Aucun résultat pour cette recherche.' : 'Personne ne s\'est encore inscrit.' }}</p>
+      </div>
+    } @else {
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Auteur</th>
+              <th>Statut</th>
+              <th class="num">Articles</th>
+              <th class="hide-sm">Dernier article</th>
+              <th class="num">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (a of visible; track a.id) {
+              <tr>
+                <td>
+                  <div class="who">
+                    <span class="avatar">{{ initials(a) }}</span>
+                    <span class="names">
+                      <strong>{{ a.name }} {{ a.lastName }}</strong>
+                      <small>{{ a.email }}</small>
+                    </span>
+                  </div>
+                </td>
+                <td>
+                  @if (a.actif) {
+                    <span class="badge badge-success">Actif</span>
+                  } @else {
+                    <span class="badge badge-warning">En attente</span>
+                  }
+                </td>
+                <td class="num">{{ a.postCount }}</td>
+                <td class="hide-sm nowrap">{{ a.lastPostAt ? (a.lastPostAt | date: 'dd/MM/yyyy') : '—' }}</td>
+                <td class="num">
+                  <div class="actions">
+                    <a class="icon-btn" [routerLink]="['/user', a.id, 'posts']" title="Voir ses articles" aria-label="Voir ses articles">
+                      <app-icon name="file" />
+                    </a>
+                    <button class="icon-btn danger" type="button" (click)="askDelete(a)" title="Supprimer" aria-label="Supprimer l'auteur">
+                      <app-icon name="trash" />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </main>
+</div>
+
+@if (toDelete) {
+  <div class="dialog-backdrop" (click)="closeDialog()">
+    <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="del-title" (click)="$event.stopPropagation()">
+      <h3 id="del-title">Supprimer {{ toDelete.name }} {{ toDelete.lastName }} ?</h3>
+      <div class="alert alert-error">
+        <app-icon name="alert" />
+        <span>
+          Cette action est définitive. Le compte et <strong>ses {{ toDelete.postCount }} article{{ toDelete.postCount > 1 ? 's' : '' }}</strong>,
+          avec leurs images et leurs commentaires, seront supprimés.
+        </span>
+      </div>
+      <div class="dialog-actions">
+        <button class="btn btn-secondary" type="button" (click)="closeDialog()" [disabled]="deleting">Annuler</button>
+        <button class="btn btn-danger" type="button" (click)="confirmDelete()" [disabled]="deleting">
+          <app-icon name="trash" [size]="16" /> {{ deleting ? 'Suppression…' : 'Supprimer définitivement' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (toast) {
+  <div class="toast" [class.error]="toast.error" role="status">{{ toast.text }}</div>
+}

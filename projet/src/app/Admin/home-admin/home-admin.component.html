@@ -1,0 +1,82 @@
+<div class="dash">
+  <app-nav-bar-admin />
+  <main class="dash-main">
+    <div class="dash-header">
+      <div>
+        <h1>Vue d'ensemble</h1>
+        <p>L'activité du blog en un coup d'œil.</p>
+      </div>
+      <a class="btn btn-secondary" routerLink="/listAllPost">
+        <app-icon name="file" [size]="16" /> Gérer les articles
+      </a>
+    </div>
+
+    @if (error) {
+      <div class="alert alert-error" role="alert"><app-icon name="alert" /> {{ error }}</div>
+    }
+
+    <div class="stat-grid">
+      @if (loading) {
+        @for (i of [1, 2, 3]; track i) { <div class="skeleton stat-skel"></div> }
+      } @else if (stats) {
+        <div class="card stat">
+          <div class="stat-label">Articles publiés</div>
+          <div class="stat-value">{{ stats.published }}</div>
+        </div>
+        <div class="card stat">
+          <div class="stat-label">Brouillons</div>
+          <div class="stat-value">{{ stats.drafts }}</div>
+        </div>
+        <div class="card stat">
+          <div class="stat-label">Auteurs</div>
+          <div class="stat-value">{{ stats.authors }}</div>
+        </div>
+      }
+    </div>
+
+    @if (stats) {
+      <div class="charts">
+        <section class="card card-pad">
+          <h3>Articles publiés par catégorie</h3>
+          @if (stats.publishedByCategory.length) {
+            <div class="chart-box"><canvas #allCanvas aria-label="Articles publiés par catégorie" role="img"></canvas></div>
+          } @else {
+            <div class="empty"><app-icon name="chart" [size]="40" /><p>Aucun article publié pour l'instant.</p></div>
+          }
+        </section>
+        <section class="card card-pad">
+          <h3>Le mois dernier</h3>
+          @if (stats.publishedLastMonth.length) {
+            <div class="chart-box"><canvas #monthCanvas aria-label="Articles publiés le mois dernier" role="img"></canvas></div>
+          } @else {
+            <div class="empty"><app-icon name="calendar" [size]="40" /><p>Aucune publication le mois dernier.</p></div>
+          }
+        </section>
+      </div>
+    }
+
+    @if (latest.length) {
+      <section class="card card-pad latest">
+        <h3>Derniers articles</h3>
+        <ul>
+          @for (post of latest; track post.id) {
+            <li>
+              <a [routerLink]="['/post', post.id, 'detail']">
+                <img [src]="post.image | imageUrl" alt="" loading="lazy">
+                <span class="info">
+                  <strong>{{ post.title }}</strong>
+                  <small>{{ post.authorName }} · {{ post.createdAt | date: 'dd/MM/yyyy' }}</small>
+                </span>
+                @if (post.status === published) {
+                  <span class="badge badge-success">Publié</span>
+                } @else {
+                  <span class="badge badge-warning">Brouillon</span>
+                }
+              </a>
+            </li>
+          }
+        </ul>
+      </section>
+    }
+  </main>
+</div>

@@ -1,0 +1,14 @@
+<div class="dash">
+  <app-nav />
+  <main class="dash-main">
+    <div class="dash-header">
+      <div>
+        <span class="eyebrow">Rédaction</span>
+        <h1>Nouvel article</h1>
+        <p>Rédigez votre article paragraphe par paragraphe, puis publiez-le ou gardez-le en brouillon.</p>
+      </div>
+    </div>
+
+    <app-post-editor [saving]="saving" [error]="error" submitLabel="Publier" (submitted)="save($event)" />
+  </main>
+</div>

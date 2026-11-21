@@ -1,0 +1,29 @@
+<div class="dash">
+  <app-nav />
+  <main class="dash-main">
+    <div class="dash-header">
+      <div>
+        <a routerLink="/list" class="back"><app-icon name="arrow-left" [size]="16" /> Mes articles</a>
+        <h1>Modifier l'article</h1>
+        @if (post) { <p>{{ post.title }}</p> }
+      </div>
+    </div>
+
+    @if (loading) {
+      <div class="loading">
+        <div class="skeleton" style="height: 56px"></div>
+        <div class="skeleton" style="height: 240px"></div>
+      </div>
+    } @else if (loadError) {
+      <div class="empty">
+        <app-icon name="alert" [size]="40" />
+        <h3>Impossible de charger l'article</h3>
+        <p>{{ loadError }}</p>
+        <a routerLink="/list" class="btn btn-secondary">Retour à mes articles</a>
+      </div>
+    } @else {
+      <app-post-editor [post]="post" [saving]="saving" [error]="error" submitLabel="Publier les modifications"
+                       (submitted)="save($event)" />
+    }
+  </main>
+</div>

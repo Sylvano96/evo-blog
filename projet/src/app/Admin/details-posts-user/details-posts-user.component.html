@@ -1,0 +1,54 @@
+<div class="dash">
+  <app-nav-bar-admin />
+  <main class="dash-main">
+    <a class="back" routerLink="/listAllUsers"><app-icon name="arrow-left" [size]="16" /> Tous les auteurs</a>
+
+    <div class="dash-header">
+      <div>
+        <h1>{{ authorName }}</h1>
+        @if (!isLoading && !error) {
+          <p>{{ data.length }} article{{ data.length > 1 ? 's' : '' }} · {{ publishedCount }} publié{{ publishedCount > 1 ? 's' : '' }}</p>
+        }
+      </div>
+    </div>
+
+    @if (error) {
+      <div class="alert alert-error" role="alert"><app-icon name="alert" /> {{ error }}</div>
+    }
+
+    @if (isLoading) {
+      <div class="post-grid">
+        @for (i of [1, 2, 3]; track i) { <div class="skeleton card-skel"></div> }
+      </div>
+    } @else if (!data.length && !error) {
+      <div class="empty">
+        <app-icon name="inbox" [size]="40" />
+        <h3>Aucun article</h3>
+        <p>Cet auteur n'a encore rien écrit.</p>
+      </div>
+    } @else {
+      <div class="post-grid">
+        @for (post of data; track post.id) {
+          <a class="post-card" [routerLink]="['/post', post.id, 'detail']">
+            <div class="cover"><img [src]="post.image | imageUrl" [alt]="post.title" loading="lazy"></div>
+            <div class="body">
+              <div class="tags">
+                <span class="chip">{{ post.category }}</span>
+                @if (post.status === published) {
+                  <span class="badge badge-success">Publié</span>
+                } @else {
+                  <span class="badge badge-warning">Brouillon</span>
+                }
+              </div>
+              <h3 class="title">{{ post.title }}</h3>
+              <div class="meta">
+                <span>{{ post.createdAt | date: 'dd/MM/yyyy' }}</span>
+                <span>· {{ post.contents.length }} section{{ post.contents.length > 1 ? 's' : '' }}</span>
+              </div>
+            </div>
+          </a>
+        }
+      </div>
+    }
+  </main>
+</div>

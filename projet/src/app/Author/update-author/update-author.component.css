@@ -1,0 +1,6 @@
+.back {
+  display: inline-flex; align-items: center; gap: 6px;
+  margin-bottom: 8px; font-size: .88rem; font-weight: 500; color: var(--text-2);
+}
+.back:hover { color: var(--text); text-decoration: none; }
+.loading { display: grid; gap: 16px; max-width: 900px; }

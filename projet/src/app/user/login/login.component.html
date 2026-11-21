@@ -1,0 +1,52 @@
+<app-nav-bar />
+
+<main class="auth-page">
+  <div class="card auth-card">
+    <h1>Bon retour</h1>
+    <p class="lead">Connectez-vous pour écrire et gérer vos articles.</p>
+
+    <form [formGroup]="formulaire" (ngSubmit)="submit()" novalidate>
+      <div class="field">
+        <label class="label" for="email">E-mail</label>
+        <input id="email" class="input" type="email" formControlName="email" autocomplete="email" />
+        @if (formulaire.controls.email.touched && formulaire.controls.email.invalid) {
+          <span class="field-error">Saisissez une adresse e-mail valide.</span>
+        }
+      </div>
+
+      <div class="field">
+        <label class="label" for="password">Mot de passe</label>
+        <div class="pwd">
+          <input id="password" class="input" [type]="showPassword ? 'text' : 'password'"
+                 formControlName="password" autocomplete="current-password" />
+          <button type="button" class="icon-btn" (click)="showPassword = !showPassword"
+                  [attr.aria-label]="showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'">
+            <app-icon name="eye" [size]="16" />
+          </button>
+        </div>
+        @if (formulaire.controls.password.touched && formulaire.controls.password.invalid) {
+          <span class="field-error">Saisissez votre mot de passe.</span>
+        }
+      </div>
+
+      @if (error) {
+        <div class="alert alert-error" role="alert">
+          <app-icon name="alert" />
+          <span>
+            {{ error }}
+            @if (notActivated) {
+              <br />
+              <a routerLink="/user/validate" [queryParams]="{ email: formulaire.controls.email.value }">Activer mon compte</a>
+            }
+          </span>
+        </div>
+      }
+
+      <button class="btn btn-primary btn-lg btn-block" type="submit" [disabled]="pending">
+        {{ pending ? 'Connexion…' : 'Se connecter' }}
+      </button>
+    </form>
+
+    <p class="auth-footer">Pas encore de compte ? <a routerLink="/signUp">Devenir auteur</a></p>
+  </div>
+</main>

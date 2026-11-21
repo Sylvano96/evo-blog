@@ -1,0 +1,145 @@
+<div class="dash">
+  <app-nav />
+  <main class="dash-main">
+    <div class="dash-header">
+      <div>
+        <h1>Mes articles</h1>
+        <p>{{ count('all') }} article{{ count('all') > 1 ? 's' : '' }} · {{ count('published') }} publié{{ count('published') > 1 ? 's' : '' }} · {{ count('draft') }} brouillon{{ count('draft') > 1 ? 's' : '' }}</p>
+      </div>
+      <a routerLink="/create" class="btn btn-primary"><app-icon name="plus" [size]="16" /> Nouvel article</a>
+    </div>
+
+    <div class="toolbar">
+      <label class="search">
+        <span class="sr-only">Rechercher par titre</span>
+        <app-icon name="search" [size]="16" />
+        <input class="input" type="search" [(ngModel)]="searchText" placeholder="Rechercher par titre…" />
+      </label>
+      <div class="segmented" role="group" aria-label="Filtrer par statut">
+        <button type="button" [class.on]="filter === 'all'" (click)="filter = 'all'">Tous <span>{{ count('all') }}</span></button>
+        <button type="button" [class.on]="filter === 'published'" (click)="filter = 'published'">Publiés <span>{{ count('published') }}</span></button>
+        <button type="button" [class.on]="filter === 'draft'" (click)="filter = 'draft'">Brouillons <span>{{ count('draft') }}</span></button>
+      </div>
+    </div>
+
+    @if (isLoading) {
+      <div class="rows">
+        @for (i of [1, 2, 3, 4]; track i) { <div class="skeleton" style="height: 84px"></div> }
+      </div>
+    } @else if (loadError) {
+      <div class="empty">
+        <app-icon name="alert" [size]="40" />
+        <h3>Chargement impossible</h3>
+        <p>{{ loadError }}</p>
+        <button type="button" class="btn btn-secondary" (click)="load()">Réessayer</button>
+      </div>
+    } @else if (data.length === 0) {
+      <div class="empty">
+        <app-icon name="file" [size]="40" />
+        <h3>Vous n'avez encore rien écrit</h3>
+        <p>Votre premier article n'attend que vous.</p>
+        <a routerLink="/create" class="btn btn-primary"><app-icon name="plus" [size]="16" /> Écrire un article</a>
+      </div>
+    } @else if (filtered.length === 0) {
+      <div class="empty">
+        <app-icon name="search" [size]="40" />
+        <h3>Aucun résultat</h3>
+        <p>Aucun article ne correspond à votre recherche.</p>
+      </div>
+    } @else {
+      <ul class="rows">
+        @for (post of filtered; track post.id) {
+          <li class="item card">
+            <img class="thumb" [src]="post.image | imageUrl" alt="" loading="lazy" />
+            <div class="info">
+              <a [routerLink]="['/update', post.id, 'post']" class="title">{{ post.title }}</a>
+              <div class="meta">
+                <span class="chip">{{ post.category }}</span>
+                @if (post.status === PUBLISHED) {
+                  <span class="badge badge-success">Publié</span>
+                } @else {
+                  <span class="badge badge-warning">Brouillon</span>
+                }
+                <span class="subtle">{{ post.createdAt | date: 'd MMM yyyy' }}</span>
+              </div>
+            </div>
+            <div class="actions">
+              @if (post.status === PUBLISHED) {
+                <a class="icon-btn" [routerLink]="['/post', post.id, 'detail']" title="Voir" aria-label="Voir l'article">
+                  <app-icon name="eye" />
+                </a>
+              }
+              <button type="button" class="icon-btn" (click)="openComments(post)" title="Commentaires" aria-label="Voir les commentaires">
+                <app-icon name="message" />
+              </button>
+              <a class="icon-btn" [routerLink]="['/update', post.id, 'post']" title="Modifier" aria-label="Modifier l'article">
+                <app-icon name="edit" />
+              </a>
+              <button type="button" class="icon-btn danger" (click)="askDelete(post)" title="Supprimer" aria-label="Supprimer l'article">
+                <app-icon name="trash" />
+              </button>
+            </div>
+          </li>
+        }
+      </ul>
+    }
+  </main>
+</div>
+
+@if (toDelete) {
+  <div class="dialog-backdrop" (click)="closeDialogs()">
+    <div class="dialog" role="alertdialog" aria-modal="true" aria-labelledby="del-title" (click)="$event.stopPropagation()">
+      <h3 id="del-title">Supprimer cet article ?</h3>
+      <p class="muted">« {{ toDelete.title }} » et tous ses commentaires seront définitivement supprimés.</p>
+      <div class="dialog-actions">
+        <button type="button" class="btn btn-secondary" (click)="closeDialogs()" [disabled]="deleting">Annuler</button>
+        <button type="button" class="btn btn-danger" (click)="confirmDelete()" [disabled]="deleting">
+          {{ deleting ? 'Suppression…' : 'Supprimer' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (commentsPost) {
+  <div class="dialog-backdrop" (click)="closeDialogs()">
+    <div class="dialog wide" role="dialog" aria-modal="true" aria-labelledby="com-title" (click)="$event.stopPropagation()">
+      <div class="dialog-head">
+        <h3 id="com-title">Commentaires</h3>
+        <button type="button" class="icon-btn" (click)="closeDialogs()" aria-label="Fermer"><app-icon name="x" /></button>
+      </div>
+      <p class="subtle">{{ commentsPost.title }}</p>
+
+      @if (commentsLoading) {
+        <div class="center"><div class="spinner"></div></div>
+      } @else if (commentsError) {
+        <div class="alert alert-error">{{ commentsError }}</div>
+      } @else if (comments.length === 0) {
+        <div class="empty small">
+          <app-icon name="inbox" [size]="32" />
+          <p>Aucun commentaire pour le moment.</p>
+        </div>
+      } @else {
+        <ul class="comments">
+          @for (c of comments; track c.id) {
+            <li>
+              <div class="comment-head">
+                <strong>{{ c.pseudo }}</strong>
+                <span class="subtle">{{ c.createdAt | date: 'd MMM yyyy, HH:mm' }}</span>
+                <span class="spacer"></span>
+                <button type="button" class="icon-btn danger" (click)="deleteComment(c)" aria-label="Supprimer le commentaire">
+                  <app-icon name="trash" [size]="16" />
+                </button>
+              </div>
+              <p>{{ c.comment }}</p>
+            </li>
+          }
+        </ul>
+      }
+    </div>
+  </div>
+}
+
+@if (toast) {
+  <div class="toast" [class.error]="toast.error" role="status">{{ toast.text }}</div>
+}

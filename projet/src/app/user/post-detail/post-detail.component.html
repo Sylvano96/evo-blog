@@ -1,0 +1,116 @@
+<app-nav-bar />
+
+<main class="container page">
+  @if (loading) {
+    <div class="article">
+      <div class="skeleton" style="height: 18px; width: 120px"></div>
+      <div class="skeleton" style="height: 44px; margin-top: 16px"></div>
+      <div class="skeleton" style="height: 44px; width: 70%; margin-top: 8px"></div>
+      <div class="skeleton cover-sk"></div>
+    </div>
+  } @else if (notFound) {
+    <div class="empty missing">
+      <app-icon name="inbox" [size]="40" />
+      <h3>Article introuvable</h3>
+      <p class="subtle">Cet article n'existe pas ou n'est plus publié.</p>
+      <a class="btn btn-primary btn-sm" routerLink="/">Retour à l'accueil</a>
+    </div>
+  } @else if (loadError) {
+    <div class="alert alert-error missing"><app-icon name="alert" /> {{ loadError }}</div>
+  } @else if (post) {
+    <article class="article">
+      <a class="back" routerLink="/" fragment="posts"><app-icon name="arrow-left" [size]="16" /> Tous les articles</a>
+
+      <header>
+        <span class="chip">{{ post.category }}</span>
+        <h1>{{ post.title }}</h1>
+        <div class="byline">
+          <span class="avatar">{{ initial(post.authorName) }}</span>
+          <span>
+            <strong>{{ post.authorName }}</strong>
+            <span class="subtle">Publié le {{ post.createdAt | date: 'dd/MM/yyyy' }}</span>
+          </span>
+        </div>
+      </header>
+
+      <figure class="cover">
+        <img [src]="post.image | imageUrl" [alt]="post.title" />
+      </figure>
+
+      <div class="prose">
+        @for (block of post.contents; track $index) {
+          <section>
+            <h2>{{ block.titlePara }}</h2>
+            <p>{{ block.content }}</p>
+          </section>
+        }
+      </div>
+    </article>
+
+    <section class="comments article" aria-labelledby="comments-title">
+      <h2 id="comments-title">Commentaires <span class="count">{{ comments.length }}</span></h2>
+
+      <form class="card card-pad comment-form" [formGroup]="commentForm" (ngSubmit)="submit()" novalidate>
+        <div class="field">
+          <label class="label" for="pseudo">Pseudo</label>
+          <input id="pseudo" class="input" formControlName="pseudo" maxlength="50" autocomplete="nickname" />
+          @if (commentForm.controls.pseudo.touched && commentForm.controls.pseudo.invalid) {
+            <span class="field-error">Indiquez un pseudo (50 caractères max).</span>
+          }
+        </div>
+        <div class="field">
+          <label class="label" for="comment">Votre commentaire</label>
+          <textarea id="comment" class="textarea" formControlName="comment" maxlength="2000" rows="4"></textarea>
+          @if (commentForm.controls.comment.touched && commentForm.controls.comment.invalid) {
+            <span class="field-error">Écrivez un commentaire (2000 caractères max).</span>
+          }
+        </div>
+        @if (commentError) {
+          <div class="alert alert-error"><app-icon name="alert" /> {{ commentError }}</div>
+        }
+        <div>
+          <button class="btn btn-primary" type="submit" [disabled]="sending">
+            <app-icon name="send" [size]="16" /> {{ sending ? 'Envoi…' : 'Publier' }}
+          </button>
+        </div>
+      </form>
+
+      <ul class="comment-list">
+        @for (c of comments; track c.id) {
+          <li>
+            <span class="avatar">{{ initial(c.pseudo) }}</span>
+            <div>
+              <div class="comment-head">
+                <strong>{{ c.pseudo }}</strong>
+                <span class="subtle">{{ c.createdAt | date: 'dd/MM/yyyy HH:mm' }}</span>
+              </div>
+              <p>{{ c.comment }}</p>
+            </div>
+          </li>
+        } @empty {
+          <li class="subtle no-comment">Soyez le premier à réagir à cet article.</li>
+        }
+      </ul>
+    </section>
+
+    @if (related.length) {
+      <section class="related">
+        <div class="section-head"><h2>À lire aussi</h2></div>
+        <div class="post-grid">
+          @for (item of related; track item.id) {
+            <a class="post-card" [routerLink]="['/post', item.id, 'detail']">
+              <div class="cover"><img [src]="item.image | imageUrl" [alt]="item.title" loading="lazy" /></div>
+              <div class="body">
+                <span><span class="chip">{{ item.category }}</span></span>
+                <h3 class="title">{{ item.title }}</h3>
+                <div class="meta"><span>{{ item.createdAt | date: 'dd/MM/yyyy' }}</span></div>
+              </div>
+            </a>
+          }
+        </div>
+      </section>
+    }
+  }
+</main>
+
+<app-footer />

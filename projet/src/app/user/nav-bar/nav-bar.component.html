@@ -1,0 +1,27 @@
+<header class="header">
+  <div class="container bar">
+    <a routerLink="/" class="brand" (click)="closeMenu()">Evo<span>Blog</span></a>
+
+    <button class="icon-btn toggle" type="button" (click)="toggleMenu()" [attr.aria-expanded]="isMenuOpen"
+            aria-controls="main-nav" aria-label="Ouvrir le menu">
+      <app-icon [name]="isMenuOpen ? 'x' : 'menu'" />
+    </button>
+
+    <nav id="main-nav" class="menu" [class.open]="isMenuOpen">
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="closeMenu()">Accueil</a>
+      <a routerLink="/" fragment="posts" (click)="closeMenu()">Articles</a>
+      <a routerLink="/" fragment="actuality" (click)="closeMenu()">Fil d'actualité</a>
+
+      <span class="actions">
+        @if (spacePath) {
+          <a class="btn btn-primary btn-sm" [routerLink]="spacePath" (click)="closeMenu()">
+            Mon espace <app-icon name="arrow-right" [size]="16" />
+          </a>
+        } @else {
+          <a class="btn btn-ghost btn-sm" routerLink="/login" (click)="closeMenu()">Se connecter</a>
+          <a class="btn btn-primary btn-sm" routerLink="/signUp" (click)="closeMenu()">Écrire sur EvoBlog</a>
+        }
+      </span>
+    </nav>
+  </div>
+</header>

@@ -1,0 +1,149 @@
+<div class="dash">
+  <app-nav-bar-admin />
+  <main class="dash-main">
+    <div class="dash-header">
+      <div>
+        <h1>Articles</h1>
+        <p>
+          @if (isLoading) { Chargement… }
+          @else { {{ visible.length }} article{{ visible.length > 1 ? 's' : '' }} }
+        </p>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <label class="search">
+        <span class="sr-only">Rechercher un article</span>
+        <app-icon name="search" />
+        <input class="input" type="search" placeholder="Titre, catégorie, statut…"
+               [value]="searchText" (input)="onSearch($event)">
+      </label>
+      <label class="filter">
+        <span class="sr-only">Filtrer par statut</span>
+        <select class="select" [value]="filter" (change)="onFilter($event)">
+          <option value="all">Tous les statuts</option>
+          <option value="published">Publiés</option>
+          <option value="draft">Brouillons</option>
+        </select>
+      </label>
+    </div>
+
+    @if (error) {
+      <div class="alert alert-error" role="alert"><app-icon name="alert" /> {{ error }}</div>
+    }
+
+    @if (isLoading) {
+      <div class="stack">
+        @for (i of [1, 2, 3, 4]; track i) { <div class="skeleton row-skel"></div> }
+      </div>
+    } @else if (!visible.length) {
+      <div class="empty">
+        <app-icon name="inbox" [size]="40" />
+        <h3>Aucun article</h3>
+        <p>{{ searchText ? 'Aucun résultat pour cette recherche.' : 'Aucun article ne correspond à ce filtre.' }}</p>
+      </div>
+    } @else {
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Article</th>
+              <th class="hide-md">Auteur</th>
+              <th class="hide-sm">Catégorie</th>
+              <th>Statut</th>
+              <th class="hide-md">Date</th>
+              <th class="num">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (post of visible; track post.id) {
+              <tr>
+                <td>
+                  <div class="article">
+                    <img [src]="post.image | imageUrl" alt="" loading="lazy">
+                    <span class="title">{{ post.title }}</span>
+                  </div>
+                </td>
+                <td class="hide-md">{{ post.authorName }}</td>
+                <td class="hide-sm"><span class="chip">{{ post.category }}</span></td>
+                <td>
+                  @if (post.status === published) {
+                    <span class="badge badge-success">Publié</span>
+                  } @else {
+                    <span class="badge badge-warning">Brouillon</span>
+                  }
+                </td>
+                <td class="hide-md nowrap">{{ post.createdAt | date: 'dd/MM/yyyy' }}</td>
+                <td class="num">
+                  <div class="actions">
+                    <a class="icon-btn" [routerLink]="['/post', post.id, 'detail']" title="Voir" aria-label="Voir l'article">
+                      <app-icon name="eye" />
+                    </a>
+                    <button class="icon-btn" type="button" (click)="openComments(post)" title="Commentaires" aria-label="Commentaires">
+                      <app-icon name="message" />
+                    </button>
+                    <button class="icon-btn danger" type="button" (click)="askDelete(post)" title="Supprimer" aria-label="Supprimer l'article">
+                      <app-icon name="trash" />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </main>
+</div>
+
+@if (toDelete) {
+  <div class="dialog-backdrop" (click)="closeDialogs()">
+    <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="del-title" (click)="$event.stopPropagation()">
+      <h3 id="del-title">Supprimer cet article ?</h3>
+      <p class="muted">« {{ toDelete.title }} » sera supprimé définitivement, avec son image et ses commentaires.</p>
+      <div class="dialog-actions">
+        <button class="btn btn-secondary" type="button" (click)="closeDialogs()" [disabled]="deleting">Annuler</button>
+        <button class="btn btn-danger" type="button" (click)="confirmDelete()" [disabled]="deleting">
+          <app-icon name="trash" [size]="16" /> {{ deleting ? 'Suppression…' : 'Supprimer' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (commentsPost) {
+  <div class="dialog-backdrop" (click)="closeDialogs()">
+    <div class="dialog wide" role="dialog" aria-modal="true" aria-labelledby="com-title" (click)="$event.stopPropagation()">
+      <div class="dialog-head">
+        <h3 id="com-title">Commentaires</h3>
+        <button class="icon-btn" type="button" (click)="closeDialogs()" aria-label="Fermer"><app-icon name="x" /></button>
+      </div>
+      <p class="subtle">{{ commentsPost.title }}</p>
+
+      @if (commentsLoading) {
+        <div class="center"><div class="spinner"></div></div>
+      } @else if (!comments.length) {
+        <div class="empty"><app-icon name="message" [size]="40" /><p>Aucun commentaire.</p></div>
+      } @else {
+        <ul class="comments">
+          @for (c of comments; track c.id) {
+            <li>
+              <div class="comment-head">
+                <strong>{{ c.pseudo }}</strong>
+                <span class="subtle">{{ c.createdAt | date: 'dd/MM/yyyy HH:mm' }}</span>
+                <button class="icon-btn danger" type="button" (click)="deleteComment(c)" aria-label="Supprimer le commentaire" title="Supprimer">
+                  <app-icon name="trash" />
+                </button>
+              </div>
+              <p>{{ c.comment }}</p>
+            </li>
+          }
+        </ul>
+      }
+    </div>
+  </div>
+}
+
+@if (toast) {
+  <div class="toast" [class.error]="toast.error" role="status">{{ toast.text }}</div>
+}

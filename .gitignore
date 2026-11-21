@@ -1,0 +1,13 @@
+# Local secrets and runtime files
+.env
+*.log
+logs/
+uploads/
+spring.sql
+*.sql
+
+# Build output and dependencies
+node_modules/
+dist/
+.angular/
+target/

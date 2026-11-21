@@ -1,0 +1,92 @@
+<div class="dash">
+  <app-nav />
+  <main class="dash-main">
+    <div class="dash-header">
+      <div>
+        <h1>Bonjour {{ firstName }}</h1>
+        <p>Voici où en sont vos articles.</p>
+      </div>
+      <a routerLink="/create" class="btn btn-primary"><app-icon name="plus" [size]="16" /> Nouvel article</a>
+    </div>
+
+    @if (error) {
+      <div class="alert alert-error spaced" role="alert">
+        <app-icon name="alert" [size]="16" /> {{ error }}
+        <button type="button" class="btn btn-sm btn-secondary push" (click)="load()">Réessayer</button>
+      </div>
+    }
+
+    <div class="stat-grid">
+      <div class="card stat">
+        <div class="stat-label">Articles</div>
+        <div class="stat-value">@if (isLoading) { – } @else { {{ total }} }</div>
+      </div>
+      <div class="card stat">
+        <div class="stat-label">Publiés</div>
+        <div class="stat-value ok">@if (isLoading) { – } @else { {{ published }} }</div>
+      </div>
+      <div class="card stat">
+        <div class="stat-label">Brouillons</div>
+        <div class="stat-value warn">@if (isLoading) { – } @else { {{ drafts }} }</div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <section class="card card-pad">
+        <div class="panel-head">
+          <h2>Derniers articles</h2>
+          <a routerLink="/list" class="link">Tout voir <app-icon name="arrow-right" [size]="14" /></a>
+        </div>
+
+        @if (isLoading) {
+          @for (i of [1, 2, 3]; track i) { <div class="skeleton row-skel"></div> }
+        } @else if (latest.length === 0) {
+          <div class="empty">
+            <app-icon name="file" [size]="36" />
+            <h3>Aucun article pour l'instant</h3>
+            <p>Partagez votre première idée avec la communauté.</p>
+            <a routerLink="/create" class="btn btn-primary btn-sm">Écrire un article</a>
+          </div>
+        } @else {
+          <ul class="latest">
+            @for (post of latest; track post.id) {
+              <li>
+                <img [src]="post.image | imageUrl" alt="" loading="lazy" />
+                <div class="info">
+                  <a [routerLink]="['/update', post.id, 'post']" class="title">{{ post.title }}</a>
+                  <span class="subtle">{{ post.createdAt | date: 'd MMM yyyy' }}</span>
+                </div>
+                @if (post.status === PUBLISHED) {
+                  <span class="badge badge-success">Publié</span>
+                } @else {
+                  <span class="badge badge-warning">Brouillon</span>
+                }
+                <a [routerLink]="['/update', post.id, 'post']" class="icon-btn" aria-label="Modifier l'article">
+                  <app-icon name="edit" />
+                </a>
+              </li>
+            }
+          </ul>
+        }
+      </section>
+
+      <section class="card card-pad">
+        <div class="panel-head"><h2>Par catégorie</h2></div>
+        @if (isLoading) {
+          @for (i of [1, 2, 3]; track i) { <div class="skeleton bar-skel"></div> }
+        } @else if (categories.length === 0) {
+          <p class="muted">Les statistiques apparaîtront après votre premier article.</p>
+        } @else {
+          <ul class="bars">
+            @for (c of categories; track c.category) {
+              <li>
+                <div class="bar-label"><span>{{ c.category }}</span><strong>{{ c.count }}</strong></div>
+                <div class="track"><div class="fill" [style.width.%]="c.percent"></div></div>
+              </li>
+            }
+          </ul>
+        }
+      </section>
+    </div>
+  </main>
+</div>

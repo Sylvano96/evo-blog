@@ -1,0 +1,108 @@
+<section id="posts" class="section">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <span class="eyebrow">À la une</span>
+        <h2>Articles récents</h2>
+      </div>
+    </div>
+
+    @if (loading) {
+      <div class="top-grid">
+        <div class="skeleton sk-featured"></div>
+        <div class="recent-list">
+          @for (s of skeletons; track s) { <div class="skeleton sk-row"></div> }
+        </div>
+      </div>
+    } @else if (error) {
+      <div class="alert alert-error"><app-icon name="alert" /> {{ error }}</div>
+    } @else if (!featured) {
+      <div class="empty">
+        <app-icon name="inbox" [size]="40" />
+        <h3>Aucun article pour le moment</h3>
+        <p class="subtle">Revenez bientôt : nos auteurs préparent leurs premiers textes.</p>
+      </div>
+    } @else {
+      <div class="top-grid">
+        <a class="post-card featured" [routerLink]="['/post', featured.id, 'detail']">
+          <div class="cover"><img [src]="featured.image | imageUrl" [alt]="featured.title" /></div>
+          <div class="body">
+            <span><span class="chip">{{ featured.category }}</span></span>
+            <h3 class="title">{{ featured.title }}</h3>
+            <div class="meta">
+              <span>{{ featured.authorName }}</span><span>·</span>
+              <span>{{ featured.createdAt | date: 'dd/MM/yyyy' }}</span>
+            </div>
+          </div>
+        </a>
+
+        <div class="recent-list">
+          @for (item of recent; track item.id) {
+            <a class="recent" [routerLink]="['/post', item.id, 'detail']">
+              <img [src]="item.image | imageUrl" [alt]="item.title" loading="lazy" />
+              <div>
+                <span class="cat">{{ item.category }}</span>
+                <h4>{{ item.title }}</h4>
+                <span class="subtle">{{ item.createdAt | date: 'dd/MM/yyyy' }}</span>
+              </div>
+            </a>
+          }
+        </div>
+      </div>
+    }
+  </div>
+</section>
+
+@if (!loading && !error && (rest.length || side.length)) {
+  <section id="actuality" class="section alt">
+    <div class="container">
+      <div class="section-head">
+        <div>
+          <span class="eyebrow">Toutes les publications</span>
+          <h2>Fil d'actualité</h2>
+        </div>
+      </div>
+
+      <div class="feed">
+        <div>
+          @if (rest.length) {
+            <div class="post-grid">
+              @for (item of rest | paginate: { itemsPerPage: itemsPerPage, currentPage: currentPage }; track item.id) {
+                <a class="post-card" [routerLink]="['/post', item.id, 'detail']">
+                  <div class="cover"><img [src]="item.image | imageUrl" [alt]="item.title" loading="lazy" /></div>
+                  <div class="body">
+                    <span><span class="chip">{{ item.category }}</span></span>
+                    <h3 class="title">{{ item.title }}</h3>
+                    <div class="meta">
+                      <span>{{ item.authorName }}</span><span>·</span>
+                      <span>{{ item.createdAt | date: 'dd/MM/yyyy' }}</span>
+                    </div>
+                  </div>
+                </a>
+              }
+            </div>
+            <pagination-controls (pageChange)="currentPage = $event" previousLabel="Précédent" nextLabel="Suivant"
+                                 [autoHide]="true" [responsive]="true" />
+          } @else {
+            <div class="empty"><app-icon name="inbox" [size]="40" /><p>Tous les articles sont affichés ci-dessus.</p></div>
+          }
+        </div>
+
+        <aside class="side card">
+          <h3>{{ sideCategory }}</h3>
+          @for (item of side; track item.id) {
+            <a class="side-item" [routerLink]="['/post', item.id, 'detail']">
+              <img [src]="item.image | imageUrl" [alt]="item.title" loading="lazy" />
+              <div>
+                <h4>{{ item.title }}</h4>
+                <span class="subtle"><app-icon name="calendar" [size]="13" /> {{ item.createdAt | date: 'dd/MM/yyyy' }}</span>
+              </div>
+            </a>
+          } @empty {
+            <p class="subtle">Pas encore d'article dans cette catégorie.</p>
+          }
+        </aside>
+      </div>
+    </div>
+  </section>
+}
